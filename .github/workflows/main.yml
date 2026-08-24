@@ -1,42 +1,68 @@
-name: Build Android APK
+name: Build BulBul Android APK
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
 
 jobs:
   build:
+    name: Build BulBul APK
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout BulBul source code
+        uses: actions/checkout@v4
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: gradle
 
-    - name: Find and setup gradlew
-      run: find . -name "gradlew" -exec chmod +x {} + || true
+      - name: Find and setup Gradle wrapper
+        run: |
+          find . -name "gradlew" -exec chmod +x {} \; || true
 
-    - name: Generate dummy debug keystore
-      run: keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "C=US, O=Android, CN=Android Debug"
+      - name: Generate debug keystore
+        run: |
+          keytool -genkeypair \
+            -v \
+            -keystore debug.keystore \
+            -storepass android \
+            -alias androiddebugkey \
+            -keypass android \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -dname "C=IN, O=BulBul, CN=BulBul Debug"
 
-    - name: Build Debug APK
-      run: |
-        if [ -f "gradlew" ]; then
-          ./gradlew assembleDebug
-        elif [ -d "android" ] && [ -f "android/gradlew" ]; then
-          cd android && ./gradlew assembleDebug
-        else
-          gradle assembleDebug
-        fi
+      - name: Build BulBul Debug APK
+        run: |
+          if [ -f "./gradlew" ]; then
+            chmod +x ./gradlew
+            ./gradlew assembleDebug
+          elif [ -f "./android/gradlew" ]; then
+            cd android
+            chmod +x ./gradlew
+            ./gradlew assembleDebug
+          else
+            echo "Gradle wrapper not found!"
+            exit 1
+          fi
 
-    - name: Upload all APKs
-      uses: actions/upload-artifact@v4
-      with:
-        name: my-android-app
-        path: '**/*.apk'
+      - name: Find generated APKs
+        run: |
+          echo "BulBul APK files:"
+          find . -type f -name "*.apk"
+
+      - name: Upload BulBul APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: BulBul-Android-APK
+          path: |
+            **/build/outputs/apk/**/*.apk
+            **/build/outputs/apk/*.apk
+          if-no-files-found: error
+          retention-days: 30
