@@ -1,0 +1,6 @@
+{
+  "name": "BulBul",
+  "description": "A modern video-sharing platform inspired by YouTube with original bird-inspired branding, BulBul Studio creator tools, Flits/Shorts vertical player, real-time engagement, and admin moderation.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
